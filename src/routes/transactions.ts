@@ -1,8 +1,8 @@
+import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { knex } from '../database'
 import { checkSessionIdExists } from '../middlewares/check-session-id-exists'
-import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 
 export const transactionsRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(

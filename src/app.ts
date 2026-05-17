@@ -1,3 +1,6 @@
+import type {
+  ZodTypeProvider,
+} from 'fastify-type-provider-zod'
 import cookie from '@fastify/cookie'
 import fastifySwagger from '@fastify/swagger'
 import scalar from '@scalar/fastify-api-reference'
@@ -6,7 +9,6 @@ import {
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
-  ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 
 import { transactionsRoutes } from './routes/transactions'
