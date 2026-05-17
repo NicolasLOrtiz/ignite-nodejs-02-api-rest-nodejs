@@ -1,5 +1,5 @@
-import fastify from 'fastify'
 import cookie from '@fastify/cookie'
+import fastify from 'fastify'
 
 import { transactionsRoutes } from './routes/transactions'
 
