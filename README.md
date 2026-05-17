@@ -12,6 +12,8 @@ Abaixo estão as principais tecnologias e bibliotecas utilizadas no projeto e o 
 - **[Knex.js](https://knexjs.org/)**: Construtor de consultas SQL (Query Builder) utilizado para interagir com o banco de dados e rodar as Migrations de forma programática.
 - **[SQLite3](https://github.com/TryGhost/node-sqlite3)**: Banco de dados relacional leve baseado em arquivo. Utilizado exclusivamente no ambiente de desenvolvimento e testes.
 - **[Zod](https://zod.dev/)**: Biblioteca de declaração e validação de schemas de dados focada em TypeScript. Utilizada para garantir a tipagem no `request.body`, `request.params` e validar as Variáveis de Ambiente (`.env`).
+- **[@fastify/swagger](https://github.com/fastify/fastify-swagger)** e **[@scalar/fastify-api-reference](https://github.com/scalar/scalar/tree/main/packages/fastify-api-reference)**: Geração automática da especificação OpenAPI e interface interativa visual moderna para testes e visualização da API (substituindo ferramentas como o Insomnia).
+- **[fastify-type-provider-zod](https://github.com/turkerdev/fastify-type-provider-zod)**: Integração nativa do Zod ao ciclo de vida do Fastify, tipando as rotas automaticamente e unindo as validações diretamente à geração da documentação Swagger.
 - **[Vitest](https://vitest.dev/)**: Framework de testes nativo do Vite. Extremamente rápido e perfeitamente integrado ao TypeScript e ao ecossistema moderno.
 - **[Supertest](https://github.com/ladjs/supertest)**: Biblioteca que simula requisições HTTP dentro do código sem abrir portas, essencial para os testes End-to-End (E2E) das rotas do Fastify.
 - **[TypeScript](https://www.typescriptlang.org/)**: Tipagem estática em cima do JavaScript, elevando a segurança contra erros em tempo de execução.
@@ -40,74 +42,19 @@ O projeto é projetado de forma modular, com as seguintes responsabilidades prin
 - **`src/routes/`**: Separa e lida com cada domínio da aplicação. O arquivo `transactions.ts` é o *controller* responsável por ouvir os Endpoints e ditar como a lógica de acesso será tratada para essa tabela no banco.
 - **`src/middlewares/`**: Componentes auxiliares ("funções no meio do caminho"). Por exemplo: o `check-session-id-exists.ts` barra usuários que tentam acessar a rota sem um Cookie válido de identificação (`sessionId`).
 
-## 📡 Documentação das Rotas
+## 📡 Documentação Interativa da API (Scalar)
 
-Para acessar localmente, a Base URL é: `http://localhost:3333`.
+Esqueça a necessidade de importar arquivos no Insomnia ou Postman. A documentação desta API é **viva**, tipada e renderizada diretamente no seu navegador, alimentada automaticamente pelos schemas do Zod.
 
-> Todas as rotas de listagem (`GET`) dependem de um cookie válido enviado pelo cabeçalho `Cookie: sessionId=...`. O cookie é criado e enviado automaticamente ao cliente na primeira requisição feita à rota de Criação (`POST`).
+Para acessar a documentação visual e o cliente de testes interativo localmente:
 
-### 1. Criar Transação `[POST] /transactions`
-Cadastra uma nova transação financeira vinculada à sua "sessão". Cria um Cookie `sessionId` com validade de 7 dias, se ele ainda não existir.
+1. Inicie o servidor (`npm run dev`).
+2. Abra o navegador no endereço: **[http://localhost:3333/docs](http://localhost:3333/docs)**
 
-- **Corpo Esperado (JSON):**
-  ```json
-  {
-    "title": "Salário de Janeiro",
-    "amount": 5000,
-    "type": "credit" // Aceita apenas "credit" (Entrada) ou "debit" (Saída)
-  }
-  ```
+Lá você encontrará a interface do **Scalar**, que descreve perfeitamente as rotas:
+- **`[POST] /transactions`** (Criar Transação)
+- **`[GET] /transactions`** (Listar Histórico)
+- **`[GET] /transactions/:id`** (Buscar transação exclusiva)
+- **`[GET] /transactions/summary`** (Obter o saldo)
 
-- **Respostas Esperadas:**
-  - `201 Created` - Transação adicionada com sucesso.
-
-### 2. Listar Transações `[GET] /transactions`
-Lista todo o histórico de transações que pertencem unicamente ao seu Cookie de identificação.
-
-- **Respostas Esperadas:**
-  - `200 OK` - Histórico carregado.
-  ```json
-  {
-    "transactions": [
-      {
-        "id": "e2ba3d11-57de-4933-911e-b8160882e75e",
-        "title": "Salário de Janeiro",
-        "amount": 5000,
-        "session_id": "c1da3d11-57de-4933-911e-b8160882e75e",
-        "created_at": "2026-05-17 12:00:00"
-      }
-    ]
-  }
-  ```
-
-### 3. Visualizar Transação Única `[GET] /transactions/:id`
-Traz as informações exclusivas de apenas um registro referenciado pelo `id` dinâmico na URL.
-
-- **Parâmetros da Rota:** `id` *(UUID da transação)*.
-
-- **Respostas Esperadas:**
-  - `200 OK`
-  ```json
-  {
-    "transaction": {
-      "id": "e2ba3d11-...",
-      "title": "Salário de Janeiro",
-      "amount": 5000,
-      "session_id": "c1da3d11-...",
-      "created_at": "..."
-    }
-  }
-  ```
-
-### 4. Obter Resumo / Saldo `[GET] /transactions/summary`
-Calcula o saldo e a visibilidade macro das entradas menos as saídas do seu caixa baseadas no histórico.
-
-- **Respostas Esperadas:**
-  - `200 OK`
-  ```json
-  {
-    "summary": {
-      "amount": 3500
-    }
-  }
-  ```
+> 💡 **Dica de uso:** Ao realizar o teste da rota `POST` diretamente pela página do Scalar, você já recebe o `id` da transação gerada na resposta. Basta copiá-lo para testar a rota exclusiva de `GET /:id` na sequência. As requisições `GET` dependem do Cookie (`sessionId`) que é enviado de forma automatizada pelo navegador (ou cliente) no momento em que você faz o primeiro `POST`.
